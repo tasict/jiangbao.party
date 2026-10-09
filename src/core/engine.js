@@ -10,9 +10,9 @@ const LOOKS = {
     sun: 0xfff1d6, sunI: 3.1, sunOffset: [60, 110, 40],
   },
   night: {
-    skyTop: 0x18223f, skyHorizon: 0x4c5375, fog: 0x343b58, fogNear: 45, fogFar: 230,
-    hemiSky: 0x8a9ac8, hemiGround: 0x2c2a36, hemi: 1.15,
-    sun: 0xb8c8ff, sunI: 1.25, sunOffset: [-50, 95, 60],
+    skyTop: 0x1c2747, skyHorizon: 0x545c7f, fog: 0x3c4463, fogNear: 50, fogFar: 240,
+    hemiSky: 0x8a9ac8, hemiGround: 0x34323f, hemi: 1.4,
+    sun: 0xb8c8ff, sunI: 1.5, sunOffset: [-50, 95, 60],
   },
 };
 

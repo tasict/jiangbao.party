@@ -335,6 +335,11 @@ export function makeSugarcane() {
     node.position.y = i * 0.32 + 0.31;
     g.add(node);
   }
+  // a band of red paper wrapped round the top, as for an offering
+  const paper = new THREE.Mesh(new THREE.CylinderGeometry(0.096, 0.096, 0.22, 10), mat(P.canePaper));
+  paper.position.y = segs * 0.32 - 0.2;
+  paper.rotation.y = 0.3;
+  g.add(paper);
   for (let i = 0; i < 5; i++) {
     const leaf = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.9, 0.02), mat(P.caneLeaf));
     leaf.geometry.translate(0, 0.45, 0);

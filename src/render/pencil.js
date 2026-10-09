@@ -113,7 +113,7 @@ void main() {
 
   vec3 paper = texture2D(tPaper, pp / 512.0).rgb;
   // at night the bare paper between strokes reads as dusk blue, not white
-  paper *= mix(vec3(1.0), vec3(0.46, 0.5, 0.66), uNight);
+  paper *= mix(vec3(1.0), vec3(0.53, 0.57, 0.71), uNight);
   float tooth = texture2D(tPaper, pp / 61.0 + uSeed * 0.37).r;
   tooth = (tooth - 0.92) / 0.08;                       // paper grain normalised to ~0..1
 

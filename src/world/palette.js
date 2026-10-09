@@ -51,6 +51,7 @@ export const P = {
   cane: 0x6d3c5c,
   caneNode: 0x4f2a43,
   caneLeaf: 0x88b24a,
+  canePaper: 0xd9362b,
 
   terminal: 0xe2e7ea,
   terminalGlass: 0x86b5cf,

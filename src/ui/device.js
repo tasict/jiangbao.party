@@ -5,5 +5,14 @@ export const isIOS = !isAndroid && (/iP(hone|ad|od)/.test(ua) || (navigator.plat
 export const isIOSChrome = isIOS && /CriOS/.test(ua);
 export const isMobile = isIOS || isAndroid || matchMedia('(pointer: coarse)').matches;
 
+// Which browser, as far as add-to-home-screen goes. Pages opened inside Threads, LINE, Facebook
+// or Instagram run in the app's own web view, which can't add to the home screen.
+export function browserKind() {
+  if (/Barcelona|Line\/|FBAN|FBAV|FB_IAB|Instagram|Messenger|MicroMessenger|KAKAOTALK/i.test(ua)) return 'in-app';
+  if (isIOS) return /CriOS/.test(ua) ? 'ios-chrome' : /FxiOS|EdgiOS|OPiOS/.test(ua) ? 'ios-other' : 'ios-safari';
+  if (isAndroid) return /SamsungBrowser/.test(ua) ? 'samsung' : /Chrome\//.test(ua) && !/EdgA|OPR|Firefox/.test(ua) ? 'android-chrome' : 'android-other';
+  return 'desktop';
+}
+
 // Opened from the home screen rather than in a browser tab.
 export const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;

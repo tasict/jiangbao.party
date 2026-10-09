@@ -66,7 +66,7 @@ export class TreeField {
     const tree = {
       id: idx, x, z, type, scale, cIdx,
       rot: r() * Math.PI * 2,
-      alive: true, regrowAt: 0, shake: 0, fall: 0,
+      alive: true, shake: 0, fall: 0,
       radius: 0.5 * scale,
     };
     this.trees.push(tree);

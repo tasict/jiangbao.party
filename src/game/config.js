@@ -54,7 +54,8 @@ export const BIKE = [
 
 export const WORKER = { baseCost: 60, growth: 1.45, max: 8, chopTime: 5, treeValue: 12, demolishDps: 1.5 };
 
-export const TREE = { hp: { round: 3, pine: 4 }, wood: { round: 2, pine: 3 }, regrow: 80 };
+// felled trees stay stumps for the rest of the run
+export const TREE = { hp: { round: 3, pine: 4 }, wood: { round: 2, pine: 3 } };
 
 export const RAT = {
   small: { hp: 2, dmg: 4, speed: 4.4, aggro: 9, drop: 'tail', poison: 0 },

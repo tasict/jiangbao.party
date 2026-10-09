@@ -21,6 +21,9 @@ function sectorGeo(fov) {
   return g;
 }
 
+// hired workers only cut in 大安森林公園
+export const inPark = (t) => t.x >= -118 && t.x <= 40 && t.z >= 30 && t.z <= 146;
+
 export class NPCSystem {
   constructor(game) {
     this.game = game;
@@ -337,6 +340,10 @@ export class NPCSystem {
     }
   }
 
+  parkTreesLeft() {
+    return this.game.world.trees.trees.some((t) => t.alive && inPark(t));
+  }
+
   updateWorkers(dt, resolve) {
     const g = this.game;
     const trees = g.world.trees.trees;
@@ -351,8 +358,7 @@ export class NPCSystem {
         case 'seek': {
           let best = null, bd = 1e9;
           for (const t of trees) {
-            if (!t.alive || t.claimed || t.fall > 0) continue;
-            if (t.x < -118 || t.x > 40 || t.z < 30 || t.z > 146) continue;
+            if (!t.alive || t.claimed || t.fall > 0 || !inPark(t)) continue;
             const d = Math.hypot(t.x - w.x, t.z - w.z);
             if (d < bd) { bd = d; best = t; }
           }
@@ -360,6 +366,10 @@ export class NPCSystem {
             best.claimed = true;
             w.tree = best;
             w.state = 'walk';
+          } else {
+            // the park is bare: wait by the recruiting stand until the airport opens
+            const hx = POI.recruit.x - 6 + (w.i % 4) * 2.2, hz = POI.recruit.z + 7 + Math.floor((w.i % 8) / 4) * 2;
+            if (Math.hypot(w.x - hx, w.z - hz) > 0.6) walkTowards(w, hx, hz, w.speed, dt, resolve);
           }
           break;
         }

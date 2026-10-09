@@ -3,7 +3,7 @@ import { Player } from './player.js';
 import { ViewModel } from './viewmodel.js';
 import { FX } from './fx.js';
 import { RatSystem } from './rats.js';
-import { NPCSystem } from './npcs.js';
+import { NPCSystem, inPark } from './npcs.js';
 import { Airport } from './airport.js';
 import { Hazards } from './hazards.js';
 import { Ambient } from './ambient.js';
@@ -131,7 +131,7 @@ export class Game {
 
     for (const t of this.world.trees.trees) {
       t.maxHp = Math.max(2, Math.round(TREE.hp[t.type] * t.scale));
-      Object.assign(t, { alive: true, hp: t.maxHp, fall: 0, shake: 0, claimed: false, regrowAt: 0 });
+      Object.assign(t, { alive: true, hp: t.maxHp, fall: 0, shake: 0, claimed: false });
       this.world.trees.writeMatrices(t);
     }
     this.world.trees.finalize();
@@ -483,9 +483,9 @@ export class Game {
   fellTree(t, byPlayer) {
     t.alive = false;
     t.fall = 0.001;
-    t.regrowAt = this.time + TREE.regrow;
     this.animTrees.add(t);
     this.stats.trees++;
+    if (inPark(t) && !this.npcs.parkTreesLeft()) this.toast('大安森林公園的樹全砍光了');
     if (Math.hypot(t.x - this.player.pos.x, t.z - this.player.pos.z) < 40) this.audio.sfx('tree', { volume: byPlayer ? 0.8 : 0.3 });
     this.fx.burst('leaves', t.x, 3 * t.scale, t.z, 10, { jitter: 2.5 });
     if (byPlayer) {
@@ -505,17 +505,6 @@ export class Game {
       }
       tf.writeMatrices(t);
       if (t.shake <= 0 && t.fall <= 0) this.animTrees.delete(t);
-    }
-    // regrow a few out of sight each frame
-    if (Math.random() < 0.2) {
-      const px = this.player.pos.x, pz = this.player.pos.z;
-      for (const t of tf.trees) {
-        if (!t.alive && t.fall <= 0 && this.time >= t.regrowAt && Math.hypot(t.x - px, t.z - pz) > 14) {
-          t.alive = true;
-          t.hp = t.maxHp;
-          tf.writeMatrices(t);
-        }
-      }
     }
     if (tf.dirty) tf.finalize();
   }
@@ -618,7 +607,7 @@ export class Game {
         const full = this.workers >= WORKER.max;
         const cost = c(WORKER.baseCost * WORKER.growth ** this.workers);
         return {
-          title: '招聘站', note: '工人會自己去大安森林公園砍樹賺錢，機場開了會去幫忙拆',
+          title: '招聘站', note: this.npcs.parkTreesLeft() ? '工人會自己去大安森林公園砍樹賺錢，機場開了會去幫忙拆' : '大安森林公園砍光了，工人在這裡待命，機場開了會去幫忙拆',
           options: [{ id: 'worker', label: full ? '工人請滿了' : `請一位工人（${this.workers}/${WORKER.max}）`, cost: full ? null : cost, disabled: full }],
         };
       }

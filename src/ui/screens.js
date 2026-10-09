@@ -41,7 +41,7 @@ export class Screens {
           </div>
         </div>
         <div class="best">${best ? `你的普通最佳：${esc(best.name)} ${formatTime(best.time)}` : '還沒有通關紀錄，搶第一！'}</div>
-        <div class="foot">諷刺創作，劇情純屬虛構。排行榜和成就只存在這台裝置的瀏覽器。</div>
+        <div class="foot">劇情純屬虛構。排行榜和成就只存在這台裝置的瀏覽器。</div>
       </div>`, 'screen--title');
     el.querySelector('[data-go=start]').onclick = () => this.start();
     el.querySelector('[data-go=board]').onclick = () => this.board('normal', () => this.title());

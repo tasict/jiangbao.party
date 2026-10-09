@@ -1,8 +1,10 @@
 import { TITLE, SUBTITLE } from '../game/config.js';
 
 // In-game camera: grabs the rendered frame, mounts it on a paper photo card with the title and
-// the site address, and hands it on. Phones get the system share sheet with the picture attached
-// (pick Threads there); desktops download the picture and open the Threads composer.
+// the site address, and hands it to the system share sheet, where the player picks the app.
+
+// iPadOS reports itself as a Mac, so count touch points as well
+const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 export const SITE_URL = 'https://jiangbao.party/';
 const FONT = '"LXGW WenKai TC", "PingFang TC", "Noto Sans TC", sans-serif';
@@ -85,19 +87,24 @@ async function compose(shot) {
   return new Promise((resolve) => c.toBlob(resolve, 'image/jpeg', 0.9));
 }
 
-export function savePhoto(blob) {
+const fileName = () => `jiangbao-${dateStamp().replaceAll('.', '')}.jpg`;
+const asFile = (blob) => new File([blob], fileName(), { type: 'image/jpeg' });
+const canShareFile = (file) => !!navigator.canShare?.({ files: [file] });
+
+function download(blob) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `jiangbao-${dateStamp().replaceAll('.', '')}.jpg`;
+  a.download = fileName();
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 10000);
 }
 
-export async function sharePhoto(blob, { mobile }) {
-  const file = new File([blob], 'jiangbao.jpg', { type: 'image/jpeg' });
-  if (mobile && navigator.canShare?.({ files: [file] })) {
+// System share sheet with the picture attached; the player picks where it goes.
+export async function sharePhoto(blob, note) {
+  const file = asFile(blob);
+  if (canShareFile(file)) {
     try {
       await navigator.share({ files: [file], text: `${SHARE_TEXT} ${SITE_URL}` });
       return;
@@ -105,8 +112,23 @@ export async function sharePhoto(blob, { mobile }) {
       if (e.name === 'AbortError') return;
     }
   }
-  // the Threads composer takes text and a link but no picture, so save the picture for attaching
-  savePhoto(blob);
-  const q = `text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(SITE_URL)}&tag=${encodeURIComponent(TITLE)}`;
-  window.open(`https://www.threads.com/intent/post?${q}`, '_blank', 'noopener');
+  download(blob);
+  note('這個瀏覽器不能直接分享，照片已經下載，可以自己上傳');
+}
+
+// Browsers can't write to the photo library. On iOS the share sheet's 儲存影像 can; elsewhere
+// the download lands in the Downloads folder, which phone gallery apps pick up.
+export async function savePhoto(blob, note, mobile) {
+  const file = asFile(blob);
+  if (IOS && canShareFile(file)) {
+    note('在選單裡點「儲存影像」就會存進相簿');
+    try {
+      await navigator.share({ files: [file] });
+    } catch {
+      // cancelled
+    }
+    return;
+  }
+  download(blob);
+  note(mobile ? '照片存到「下載」資料夾了，相簿 App 裡就看得到' : '照片已經下載');
 }

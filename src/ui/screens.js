@@ -102,7 +102,7 @@ export class Screens {
         </ol>
         <div class="controls">
           <div><b>電腦</b>：點畫面鎖定滑鼠，WASD 移動、滑鼠轉頭、E 互動、1–4 選商店選項、M 地圖、V 切換第一／第三人稱、C 拍照、P 或 Esc 暫停</div>
-          <div><b>手機</b>：左半邊拖曳移動、右半邊拖曳轉頭，點按鈕互動，點小地圖展開，點「拍照」可以分享到 Threads</div>
+          <div><b>手機</b>：左半邊拖曳移動、右半邊拖曳轉頭，點按鈕互動，點小地圖展開，點「拍照」可以分享或存到相簿</div>
         </div>
         <div class="actions"><button class="btn" data-go="back">返回</button></div>
       </div>`);
@@ -201,14 +201,16 @@ export class Screens {
       <div class="paper panel photo-panel">
         <img class="photo-img" src="${src}" alt="遊戲截圖" />
         <div class="actions">
-          <button class="btn btn--gold" data-go="share">分享到 Threads</button>
-          <button class="btn" data-go="save">存到裝置</button>
+          <button class="btn btn--gold" data-go="share">分享</button>
+          <button class="btn" data-go="save">${mobile ? '存到相簿' : '下載照片'}</button>
           <button class="btn" data-go="back">繼續玩</button>
         </div>
-        <div class="photo-note">${mobile ? '在分享選單裡選 Threads，照片會一起帶過去' : '照片會先下載，再打開 Threads 發文頁，把照片拖進去就能貼上'}</div>
+        <div class="photo-note">點「分享」可以自己選要分享到哪裡</div>
       </div>`, 'screen--photo');
-    el.querySelector('[data-go=share]').onclick = share;
-    el.querySelector('[data-go=save]').onclick = save;
+    const noteEl = el.querySelector('.photo-note');
+    const note = (text) => (noteEl.textContent = text);
+    el.querySelector('[data-go=share]').onclick = () => share(note);
+    el.querySelector('[data-go=save]').onclick = () => save(note);
     el.querySelector('[data-go=back]').onclick = close;
   }
 

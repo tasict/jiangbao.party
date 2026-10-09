@@ -134,8 +134,8 @@ function takePhoto() {
     const mobile = isTouch();
     screens.photo(photoUrl, {
       mobile,
-      share: () => sharePhoto(blob, { mobile }),
-      save: () => savePhoto(blob),
+      share: (note) => sharePhoto(blob, note),
+      save: (note) => savePhoto(blob, note, mobile),
       close: () => resume(),
     });
   });

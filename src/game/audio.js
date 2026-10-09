@@ -988,7 +988,11 @@ export class GameAudio {
   }
 
   toggleMute() {
-    this._muted = !this._muted;
+    return this.setMuted(!this._muted);
+  }
+
+  setMuted(muted) {
+    this._muted = muted;
     if (this.ctx) this.master.gain.setTargetAtTime(this._muted ? 0 : this.vol.master, this.ctx.currentTime, 0.05);
     return this._muted;
   }

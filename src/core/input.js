@@ -17,6 +17,12 @@ export class Input {
     // shown: the stick sits in its corner during play; otherwise it only appears under the thumb
     this.stick = { shown: true, side: 'left', active: false };
     addEventListener('resize', () => this.renderStick());
+    // any finger on the screen means touch play, even on a tablet with a keyboard attached
+    addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'touch' || this.isTouch) return;
+      this.isTouch = true;
+      this.renderStick();
+    });
 
     addEventListener('keydown', (e) => {
       if (e.target instanceof HTMLInputElement) return;

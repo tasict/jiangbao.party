@@ -149,6 +149,12 @@ export class Screens {
     const el = this.mount(`
       <div class="paper panel">
         <h2>設定</h2>
+        <div class="field"><span>聲音</span>
+          <div class="tabs">
+            <button class="tab ${!s.muted ? 'on' : ''}" data-mute="0">開啟</button>
+            <button class="tab ${s.muted ? 'on' : ''}" data-mute="1">靜音</button>
+          </div>
+        </div>
         ${slider('master', '總音量')}
         ${slider('music', '配樂')}
         ${slider('sfx', '音效')}
@@ -191,6 +197,10 @@ export class Screens {
     el.querySelectorAll('[data-q]').forEach((b) => (b.onclick = () => {
       this.h.setSetting('quality', b.dataset.q);
       el.querySelectorAll('[data-q]').forEach((x) => x.classList.toggle('on', x === b));
+    }));
+    el.querySelectorAll('[data-mute]').forEach((b) => (b.onclick = () => {
+      this.h.setSetting('muted', b.dataset.mute === '1');
+      el.querySelectorAll('[data-mute]').forEach((x) => x.classList.toggle('on', x === b));
     }));
     el.querySelectorAll('[data-stick]').forEach((b) => (b.onclick = () => {
       this.h.setSetting('stick', b.dataset.stick === '1');

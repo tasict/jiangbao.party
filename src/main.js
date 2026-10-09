@@ -12,10 +12,12 @@ import { loadSettings, save } from './game/storage.js';
 import { HUD } from './ui/hud.js';
 import { Screens } from './ui/screens.js';
 import { PhotoBooth, flash, sharePhoto, savePhoto } from './ui/photo.js';
+import { isMobile } from './ui/device.js';
 
 const canvas = document.getElementById('view');
 const engine = new Engine(canvas);
 const input = new Input(canvas, document.getElementById('joystick'));
+input.isTouch ||= isMobile;
 const world = buildWorld(engine.scene);
 const glows = new Glows(engine.scene, world.lights);
 engine.onNight = (n) => glows.setNight(n);
@@ -51,6 +53,7 @@ const screens = new Screens(document.getElementById('screens'), {
 
 function applySettings() {
   audio.setVolumes({ master: settings.master, music: settings.music, sfx: settings.sfx });
+  audio.setMuted(!!settings.muted);
   game.player.sensitivity = 0.0024 * settings.sensitivity;
   game.player.thirdPerson = settings.view === 'third';
   input.setStick(settings.stick, settings.stickSide);

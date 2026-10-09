@@ -112,7 +112,7 @@ export class RatSystem {
       if (!g.world.free(x, z, 0.8) && !near) continue;
       if (g.inSafeZone(x, z)) continue;
       if (!anywhere && Math.hypot(x - g.player.pos.x, z - g.player.pos.z) < 22) continue;
-      if (key === 'songshan' && (z < -250 || z > -60 || x < 60 || x > 262)) continue;
+      if (key === 'songshan' && (z < -154 || z > -60 || x < 60 || x > 262)) continue;
       ok = true;
     }
     if (!ok) {

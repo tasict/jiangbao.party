@@ -10,19 +10,32 @@ import { mergeColored } from './batcher.js';
 import { TreeField } from './trees.js';
 
 // x = east, z = south (north is -z). Units are metres.
+// Laid out like the real city: 北投 up north, 中山 and 松山 across the middle, and
+// 萬華, 大安, 信義 along the south. The north-east corner is the Keelung River and the
+// Neihu hills, which can't be entered.
 export const DISTRICTS = {
   daan: { name: '大安', rect: [-130, -50, 50, 150], tier: 1 },
-  zhongshan: { name: '中山', rect: [-130, -160, 50, -50], tier: 1 },
+  zhongshan: { name: '中山', rect: [-270, -160, 50, -50], tier: 1 },
   xinyi: { name: '信義', rect: [50, -50, 270, 150], tier: 2 },
   beitou: { name: '北投', rect: [-270, -270, 50, -160], tier: 3 },
-  wanhua: { name: '萬華', rect: [-270, -160, -130, 150], tier: 4 },
-  songshan: { name: '松山', rect: [50, -270, 270, -50], tier: 5 },
+  wanhua: { name: '萬華', rect: [-270, -50, -130, 150], tier: 4 },
+  songshan: { name: '松山', rect: [50, -160, 270, -50], tier: 5 },
 };
 export const WORLD = { x0: -270, z0: -270, x1: 270, z1: 150 };
 
+// Buy-back stalls: the main one at the Daan base, plus one each in 北投, 萬華 and 信義 so a
+// full bag can be sold near where it filled up.
+const SELLS = [
+  { x: -72, z: -14, label: '收購攤' },
+  { x: -36, z: -194, label: '收購攤' },
+  { x: -158, z: 4, label: '收購攤' },
+  { x: 96, z: 34, label: '收購攤' },
+];
+
 export const POI = {
   spawn: { x: -42, z: 4 },
-  sell: { x: -72, z: -14, label: '收購攤' },
+  sell: SELLS[0],
+  sells: SELLS,
   recruit: { x: -14, z: -14, label: '招聘站' },
   altar: { x: -42, z: -30, label: '神明桌' },
   shop: { x: 118, z: 4, label: '商店' },
@@ -42,12 +55,12 @@ export const POI = {
   ],
   granny: { x: -168, z: 92 },
   nests: [
-    { x: -230, z: -120 }, { x: -168, z: -66 }, { x: -244, z: 62 }, { x: -150, z: 128 },
+    { x: -256, z: 8 }, { x: -146, z: 62 }, { x: -244, z: 62 }, { x: -150, z: 128 },
     { x: -206, z: 118 }, { x: -70, z: -252 }, { x: -200, z: -200 }, { x: 236, z: 122 },
   ],
   ratKing: { x: -248, z: 132 },
   airportGate: { x: 160, z: -52 },
-  runway: { x0: 62, x1: 266, z: -214, w: 30 },
+  runway: { x0: 62, x1: 266, z: -139, w: 30 },
 };
 
 // Areas where the block generator must not place buildings.
@@ -77,6 +90,12 @@ function rng(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
+
+// City blocks fill the areas between the main avenues. These are fixed rather than taken
+// from the district rects, so the seeded street plan stays put when a border moves.
+const BLOCK_AREAS = [
+  [-130, -50, 50, 150], [-130, -160, 50, -50], [50, -50, 270, 150], [-270, -270, 50, -160], [-270, -160, -130, 150],
+];
 
 const overlaps = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
 
@@ -172,15 +191,14 @@ export function buildWorld(scene) {
 
   // ---- city blocks
   const blockSize = 28;
-  for (const [key, d] of Object.entries(DISTRICTS)) {
-    if (key === 'songshan') continue;
-    const [x0, z0, x1, z1] = d.rect;
-    const tall = key === 'xinyi' ? 2.4 : key === 'zhongshan' ? 1.3 : key === 'wanhua' ? 0.75 : key === 'beitou' ? 0.7 : 1.0;
-    const dense = key === 'zhongshan' || key === 'wanhua' || key === 'xinyi';
+  for (const [x0, z0, x1, z1] of BLOCK_AREAS) {
     for (let bx = x0 + 10; bx + blockSize <= x1 - 6; bx += blockSize + 8) {
       for (let bz = z0 + 10; bz + blockSize <= z1 - 6; bz += blockSize + 8) {
         const cell = [bx, bz, bx + blockSize, bz + blockSize];
         if (RESERVED.some((q) => overlaps(cell, q)) || roads.some((q) => overlaps(cell, q))) continue;
+        const key = districtAt(bx + blockSize / 2, bz + blockSize / 2);
+        const tall = key === 'xinyi' ? 2.4 : key === 'zhongshan' ? 1.3 : key === 'wanhua' ? 0.75 : key === 'beitou' ? 0.7 : 1.0;
+        const dense = key === 'zhongshan' || key === 'wanhua' || key === 'xinyi';
         if (r() < 0.12) continue; // the odd empty lot keeps the grid from feeling stamped
         const split = r();
         const lots = split < 0.25 ? [[0, 0, 1, 1]]
@@ -234,13 +252,12 @@ export function buildWorld(scene) {
 
   // ---- stations: stall + gold circle + sign board
   const stalls = [
-    ['sell', [P.awningA, P.awningB]],
-    ['recruit', [0x3b7fc2, P.awningB]],
-    ['shop', [0x4c9255, P.awningB]],
-    ['toolShop', [0x8a5a3b, 0xe8b42f]],
+    ...POI.sells.map((p) => ['sell', p, [P.awningA, P.awningB]]),
+    ['recruit', POI.recruit, [0x3b7fc2, P.awningB]],
+    ['shop', POI.shop, [0x4c9255, P.awningB]],
+    ['toolShop', POI.toolShop, [0x8a5a3b, 0xe8b42f]],
   ];
-  for (const [key, cols] of stalls) {
-    const p = POI[key];
+  for (const [key, p, cols] of stalls) {
     const c = stall(b, p.x, p.z - 4, 0, cols);
     solid({ type: 'box', x: c.x, z: c.z, hw: c.hw, hd: c.hd });
     vendingMachine(b, p.x + 4.6, p.z - 5.2, 0, [0xc63d2c, 0x3b7fc2, 0x4c9255][key.length % 3]);
@@ -253,8 +270,8 @@ export function buildWorld(scene) {
   solid({ type: 'box', x: POI.altar.x, z: POI.altar.z - 1.6, hw: 1.8, hd: 0.9 });
   donationBox(b, POI.donation.x, POI.donation.z - 1.6);
   solid({ type: 'box', x: POI.donation.x, z: POI.donation.z - 1.6, hw: 0.7, hd: 0.5 });
-  for (const key of ['sell', 'recruit', 'altar', 'shop', 'toolShop', 'milk', 'donation']) {
-    const p = POI[key];
+  const stations = [...POI.sells.map((p) => ['sell', p]), ...['recruit', 'altar', 'shop', 'toolShop', 'milk', 'donation'].map((k) => [k, POI[k]])];
+  for (const [key, p] of stations) {
     b.add(new THREE.CylinderGeometry(2.4, 2.4, 0.06, 28), 0xf2d27a, new THREE.Matrix4().makeTranslation(p.x, 0.15, p.z));
     const s = sign(p.label, { w: Math.max(4.4, p.label.length * 1.3), h: 1.5 });
     const back = key === 'altar' || key === 'donation' ? 3.6 : 7.4;
@@ -279,10 +296,10 @@ export function buildWorld(scene) {
   // ---- airport ground: apron, grass, runway, perimeter fence
   const rw = POI.runway;
   b.wash(() => {
-    b.box(214, 0.12, 214, 0xbfcf9a, 160, 0.0, -160);
-    b.box(150, 0.14, 60, P.concrete, 160, 0.02, -110);
+    b.box(214, 0.12, 102, 0xbfcf9a, 161, 0.0, -107);
+    b.box(180, 0.14, 60, P.concrete, 160, 0.02, -90);
     b.box(rw.x1 - rw.x0, 0.16, rw.w, P.runway, (rw.x0 + rw.x1) / 2, 0.04, rw.z);
-    b.box(16, 0.15, 64, P.runway, 236, 0.03, -168);
+    b.box(16, 0.15, 30, P.runway, 214, 0.03, -110);
   });
   for (let x = rw.x0 + 10; x < rw.x1 - 10; x += 12) b.box(6, 0.04, 0.6, P.white, x, 0.14, rw.z);
   for (let i = -5; i <= 5; i++) {
@@ -293,8 +310,8 @@ export function buildWorld(scene) {
   for (let x = rw.x0; x <= rw.x1; x += 10) {
     for (const side of [-1, 1]) b.box(0.3, 0.3, 0.3, 0xf3e3a0, x, 0.2, rw.z + side * (rw.w / 2 + 0.6));
   }
-  b.add(new THREE.CylinderGeometry(0.08, 0.08, 6, 6), P.steel, new THREE.Matrix4().makeTranslation(258, 3, -188));
-  b.add(new THREE.ConeGeometry(0.45, 2.4, 8, 1, true).rotateZ(Math.PI / 2), 0xf07a2a, new THREE.Matrix4().makeTranslation(256.8, 5.8, -188));
+  b.add(new THREE.CylinderGeometry(0.08, 0.08, 6, 6), P.steel, new THREE.Matrix4().makeTranslation(258, 3, -118));
+  b.add(new THREE.ConeGeometry(0.45, 2.4, 8, 1, true).rotateZ(Math.PI / 2), 0xf07a2a, new THREE.Matrix4().makeTranslation(256.8, 5.8, -118));
   for (let x = 59; x < 266; x += 4) {
     if (Math.abs(x + 2 - POI.airportGate.x) < 8) continue;
     b.box(0.15, 2.4, 0.15, P.steel, x, 1.2, -56);
@@ -303,14 +320,34 @@ export function buildWorld(scene) {
   }
   solid({ type: 'box', x: (59 + POI.airportGate.x - 6) / 2, z: -56, hw: (POI.airportGate.x - 6 - 59) / 2, hd: 0.4, seeThrough: true });
   solid({ type: 'box', x: (POI.airportGate.x + 6 + 266) / 2, z: -56, hw: (266 - POI.airportGate.x - 6) / 2, hd: 0.4, seeThrough: true });
-  // the airport stays sealed on its other sides
+  // the airport stays sealed on its other sides; the x = 59 line also keeps 北投 off the river
   solid({ type: 'box', x: 268, z: -160, hw: 2, hd: 110, seeThrough: true });
   solid({ type: 'box', x: 59, z: -163, hw: 0.6, hd: 107, seeThrough: true });
-  for (let z = -266; z < -58; z += 4) {
+  solid({ type: 'box', x: 163.5, z: -158, hw: 104.5, hd: 0.4, seeThrough: true });
+  for (let z = -158; z < -58; z += 4) {
     b.box(0.15, 2.4, 0.15, P.steel, 59, 1.2, z);
     b.box(0.08, 0.1, 4, P.steel, 59, 2.2, z + 2);
     b.box(0.08, 0.1, 4, P.steel, 59, 1.2, z + 2);
   }
+  for (let x = 59; x < 266; x += 4) {
+    b.box(0.15, 2.4, 0.15, P.steel, x, 1.2, -158);
+    b.box(4, 0.1, 0.08, P.steel, x + 2, 2.2, -158);
+    b.box(4, 0.1, 0.08, P.steel, x + 2, 1.2, -158);
+  }
+
+  // ---- north-east: the Keelung River bends round the airport, with the Neihu hills beyond
+  b.wash(() => {
+    b.box(226, 0.1, 110, 0xb5c79c, 167, -0.05, -215);
+    b.box(231, 0.1, 20, 0x8cc4d4, 174.5, 0.0, -174);
+    b.box(22, 0.1, 140, 0x8cc4d4, 73, 0.0, -234);
+    b.box(1, 1.2, 110, 0xb8b2a6, 59.5, 0.6, -215);
+    for (const [x, z, rad, h, col, ry] of [
+      [130, -240, 36, 18, 0xa7bfa0, 0.4], [196, -250, 46, 26, 0x9db7a7, 1.3], [252, -226, 32, 15, 0xb2c4a6, 2.2],
+    ]) {
+      const g = new THREE.ConeGeometry(rad, h, 7, 1).translate(0, h / 2 - 2, 0);
+      b.add(g, col, new THREE.Matrix4().makeTranslation(x, 0, z).multiply(new THREE.Matrix4().makeRotationY(ry)).multiply(new THREE.Matrix4().makeScale(1, 1, 0.8)));
+    }
+  });
 
   // ---- district signs at the entrances
   const signs = [
@@ -403,24 +440,21 @@ export function buildWorld(scene) {
   scatter([-128, -158, 48, -52], 45);
   scatter([52, -48, 268, 148], 70);
   scatter([-268, -158, -132, 148], 60);
-  scatter([58, -268, 266, -234], 25, { type: 'pine' });
   trees.finalize();
 
-  const safeZones = ['sell', 'recruit', 'altar', 'shop', 'toolShop', 'milk'].map((k) => ({ x: POI[k].x, z: POI[k].z, r: 9 }));
+  const safeZones = [...POI.sells, ...['recruit', 'altar', 'shop', 'toolShop', 'milk'].map((k) => POI[k])].map((p) => ({ x: p.x, z: p.z, r: 9 }));
 
   return { staticMesh, colliders, trees, safeZones, roads, onRoad, free, rng: r, lights };
 }
 
-// The Taipei basin beyond the playable city: Tamsui River to the west, Keelung River
-// to the north, hills all round, and a skyline of blocks so the edge is not a void.
+// The Taipei basin beyond the playable city: Tamsui River to the west, hills all round
+// (Yangmingshan behind 北投 to the north), and a skyline of blocks so the edge is not a void.
 function backdrop(r) {
   const M = () => new THREE.Matrix4();
   const parts = [];
-  // rivers
+  // river
   parts.push({ geo: new THREE.BoxGeometry(34, 0.1, 520), color: 0x8cc4d4, matrix: M().makeTranslation(-292, -0.05, -60) });
-  parts.push({ geo: new THREE.BoxGeometry(620, 0.1, 30), color: 0x8cc4d4, matrix: M().makeTranslation(30, -0.05, -292) });
   parts.push({ geo: new THREE.BoxGeometry(4, 1.2, 520), color: 0xb8b2a6, matrix: M().makeTranslation(-273, 0.6, -60) });
-  parts.push({ geo: new THREE.BoxGeometry(560, 1.2, 4), color: 0xb8b2a6, matrix: M().makeTranslation(0, 0.6, -273) });
   // distant skyline blocks to the south and east
   for (let i = 0; i < 70; i++) {
     const side = i % 2;

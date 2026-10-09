@@ -20,6 +20,7 @@ import {
 } from './config.js';
 
 const STATION_RADIUS = 2.6;
+const nearestSell = (x, z) => POI.sells.reduce((a, b) => (Math.hypot(b.x - x, b.z - z) < Math.hypot(a.x - x, a.z - z) ? b : a));
 
 // What 蔣寶 says while handing out milk, and how the kid answers.
 const MILK_TALK = [
@@ -596,7 +597,8 @@ export class Game {
   // ---------------------------------------------------------------- stations
 
   stationAt(x, z) {
-    for (const key of ['sell', 'recruit', 'altar', 'shop', 'toolShop', 'milk', 'donation']) {
+    if (POI.sells.some((p) => Math.hypot(x - p.x, z - p.z) < STATION_RADIUS)) return 'sell';
+    for (const key of ['recruit', 'altar', 'shop', 'toolShop', 'milk', 'donation']) {
       if (Math.hypot(x - POI[key].x, z - POI[key].z) < STATION_RADIUS) return key;
     }
     return null;
@@ -608,7 +610,9 @@ export class Game {
     switch (key) {
       case 'sell': {
         const shame = this.status.shame > 0 ? `（炎上中，收購價打 ${CANE.shamePrice * 10} 折）` : '';
-        return { title: '收購攤', note: this.bag.length ? `排隊的市民一個一個跟你買…${shame}` : `背包是空的。砍樹、打老鼠拿素材再來${shame}`, options: [] };
+        const p = this.player.pos;
+        const busy = nearestSell(p.x, p.z) === POI.sell ? '排隊的市民一個一個跟你買…' : '老闆一件一件幫你收…';
+        return { title: '收購攤', note: this.bag.length ? `${busy}${shame}` : `背包是空的。砍樹、打老鼠拿素材再來${shame}`, options: [] };
       }
       case 'recruit': {
         const full = this.workers >= WORKER.max;
@@ -747,7 +751,8 @@ export class Game {
         this.sellCd += 0.11;
       }
       if (batch) {
-        const q = this.npcs.queue[Math.floor(Math.random() * this.npcs.queue.length)];
+        const s = nearestSell(p.x, p.z);
+        const q = s === POI.sell ? this.npcs.queue[Math.floor(Math.random() * this.npcs.queue.length)] : { x: s.x, z: s.z - 4 };
         this.fx.text(`+$${batch}`, q.x, 2.2, q.z, 'money', 0.8);
         this.audio.sfx('coin', { volume: 0.35, pitch: 1 + Math.random() * 0.3 });
       }

@@ -8,10 +8,11 @@ import { AIRPORT, TOOLS, HAZARD } from './config.js';
 // Songshan Airport: demolishable blocks (five terminal sections, tower, two hangars),
 // a gate that opens once the milk is handed out, and a plane that takes off every so often.
 
-const TERMINAL = { x: 160, z: -88, w: 70, d: 22, h: 12 };
-const TOWER = { x: 236, z: -112 };
-const HANGARS = [{ x: 84, z: -128 }, { x: 116, z: -128 }];
-const PARKED = [{ x: 150, z: -134 }, { x: 196, z: -136 }];
+const TERMINAL = { x: 160, z: -78, w: 70, d: 22, h: 12 };
+const TOWER = { x: 232, z: -96 };
+const HANGARS = [{ x: 80, z: -96 }, { x: 104, z: -96 }];
+// parked nose-in at the back of the terminal, tails towards the runway
+const PARKED = [{ x: 145, z: -104 }, { x: 178, z: -104 }];
 
 function terminalSection(w, d, h, i, n) {
   const g = new THREE.Group();
@@ -78,9 +79,9 @@ export class Airport {
     for (const p of PARKED) {
       const m = makePlane();
       m.position.set(p.x, 0, p.z);
-      m.rotation.y = Math.PI * 0.1;
+      m.rotation.y = -Math.PI / 2;
       this.group.add(m);
-      game.grid.insert({ type: 'box', x: p.x, z: p.z, hw: 9, hd: 3, seeThrough: true });
+      game.grid.insert({ type: 'box', x: p.x, z: p.z - 1, hw: 3, hd: 12, seeThrough: true });
     }
 
     // the jet that takes off: runs east to west along the runway

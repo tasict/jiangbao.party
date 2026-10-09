@@ -79,9 +79,8 @@ export class NPCSystem {
     for (let i = 0; i < WORKER.max; i++) {
       this.workers.push(add('worker', { shirt: 0x6b7a8a, pants: 0x3d3d48, accessories: ['vest', 'hardhat'] }, { hired: false, speed: 4.6 }));
     }
-    for (const key of ['sell', 'recruit', 'shop', 'toolShop']) {
-      const p = POI[key];
-      this.clerks.push(add('clerk', { shirt: key === 'toolShop' ? 0x8a5a3b : pick(SHIRTS) }, { homeX: p.x, homeZ: p.z - 5.6, range: 10 }));
+    for (const p of [...POI.sells, POI.recruit, POI.shop, POI.toolShop]) {
+      this.clerks.push(add('clerk', { shirt: p === POI.toolShop ? 0x8a5a3b : pick(SHIRTS) }, { homeX: p.x, homeZ: p.z - 5.6, range: 10 }));
     }
     this.granny = add('granny', { shirt: 0xd9c2d6, pants: 0x6b5a7a, hair: 0xe6e6e6, pose: 'lie' }, { range: 0 });
 

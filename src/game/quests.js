@@ -74,8 +74,10 @@ export class Quests {
         o = { title: '完成！', text: '松山機場拆光了', target: null };
     }
     if (g.bagFull() && !g.holding && this.stage !== 'done') {
-      o.hint = '背包滿了！回大安收購攤賣掉';
-      o.target = P('sell');
+      const p = g.player.pos;
+      const s = POI.sells.reduce((a, b) => (Math.hypot(b.x - p.x, b.z - p.z) < Math.hypot(a.x - p.x, a.z - p.z) ? b : a));
+      o.hint = '背包滿了！到最近的收購攤賣掉';
+      o.target = { x: s.x, z: s.z, label: s.label };
     }
     return o;
   }

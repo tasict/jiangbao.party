@@ -55,12 +55,18 @@ export class Minimap {
     ctx.arc(X(-39), Z(88), 9 * sx, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#c3d1a0';
-    ctx.fillRect(X(54), Z(-268), X(268) - X(54), Z(-54) - Z(-268));
+    ctx.fillRect(X(54), Z(-158), X(268) - X(54), Z(-54) - Z(-158));
     ctx.fillStyle = '#8f8b86';
     const rw = POI.runway;
     ctx.fillRect(X(rw.x0), Z(rw.z - rw.w / 2), X(rw.x1) - X(rw.x0), rw.w * sz);
     ctx.fillStyle = '#d9dee2';
-    ctx.fillRect(X(125), Z(-99), 70 * sx, 22 * sz);
+    ctx.fillRect(X(125), Z(-89), 70 * sx, 22 * sz);
+    // Keelung River and the Neihu hills in the north-east corner
+    ctx.fillStyle = '#b5c79c';
+    ctx.fillRect(X(54), Z(WORLD.z0), X(WORLD.x1) - X(54), Z(-160) - Z(WORLD.z0));
+    ctx.fillStyle = '#8cc9d8';
+    ctx.fillRect(X(59), Z(-184), X(WORLD.x1) - X(59), 20 * sz);
+    ctx.fillRect(X(62), Z(WORLD.z0), 22 * sx, Z(-164) - Z(WORLD.z0));
     // roads as doubled pencil lines
     const roads = [
       [WORLD.x0, -50, WORLD.x1, -50], [WORLD.x0, -160, 50, -160], [-130, WORLD.z0, -130, WORLD.z1], [50, WORLD.z0, 50, WORLD.z1],
@@ -90,7 +96,7 @@ export class Minimap {
     ctx.textBaseline = 'middle';
     const fs = Math.max(10, Math.round(w / 15));
     ctx.font = `700 ${fs}px "LXGW WenKai TC", "PingFang TC", sans-serif`;
-    const namePos = { daan: [5, 134], zhongshan: [-98, -72], xinyi: [218, 128], beitou: [-210, -250], wanhua: [-205, -110], songshan: [160, -178] };
+    const namePos = { daan: [5, 134], zhongshan: [-98, -72], xinyi: [218, 128], beitou: [-210, -250], wanhua: [-200, 66], songshan: [96, -70] };
     for (const [k, d] of Object.entries(DISTRICTS)) {
       const [nx, nz] = namePos[k];
       ctx.fillText(d.name, X(nx), Z(nz));
@@ -99,8 +105,8 @@ export class Minimap {
       ctx.font = `${Math.round(fs * 0.62)}px "LXGW WenKai TC", "PingFang TC", sans-serif`;
       const extra = [
         ['福德宮', POI.temple.x - 6, POI.temple.z - 14], ['國小', POI.school.x, POI.school.z - 10], ['吸菸所', POI.smoking.x, POI.smoking.z + 9],
-        ['溫泉', -132, -244], ['老鼠王', POI.ratKing.x + 6, POI.ratKing.z - 10], ['夜市・遮陽傘', -196, 12], ['阿婆', POI.granny.x, POI.granny.z + 9],
-        ['塔台', 236, -124], ['航廈', 160, -104], ['森林公園', -39, 66],
+        ['溫泉', -132, -244], ['老鼠王', POI.ratKing.x + 6, POI.ratKing.z - 10], ['夜市', -222, 16], ['阿婆', POI.granny.x, POI.granny.z + 9],
+        ['塔台', 232, -108], ['航廈', 160, -97], ['森林公園', -39, 66], ['基隆河', 176, -174], ['內湖', 190, -226],
       ];
       for (const [t, x, z] of extra) ctx.fillText(t, X(x), Z(z));
     }
@@ -116,8 +122,8 @@ export class Minimap {
     const iconR = small ? Math.max(5, w * 0.03) : w * 0.018;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    for (const l of LANDMARKS) {
-      const p = POI[l.key];
+    const marks = LANDMARKS.flatMap((l) => (l.key === 'sell' ? POI.sells : [POI[l.key]]).map((p) => [l, p]));
+    for (const [l, p] of marks) {
       ctx.fillStyle = '#f6efe0';
       ctx.strokeStyle = l.color;
       ctx.lineWidth = 1.5;

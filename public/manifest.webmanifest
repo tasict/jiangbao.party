@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "蔣寶大冒險 - 甘蔗的祝福",
+  "short_name": "蔣寶大冒險",
+  "description": "丟掉甘蔗、發完鮮奶、拆了松山機場。彩色鉛筆風第一人稱速通小遊戲。",
+  "lang": "zh-Hant-TW",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6efe0",
+  "theme_color": "#f6efe0",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

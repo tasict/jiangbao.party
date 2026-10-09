@@ -226,6 +226,20 @@ html, body {
 .tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
 .tab { font: inherit; font-size: 16px; padding: 6px 16px; cursor: pointer; color: var(--ink); background: var(--paper-2); border: 2px solid var(--ink-soft); border-radius: 14px 4px 12px 6px; }
 .tab.on { background: #f6d77a; border-color: var(--ink); }
+
+/* add to home screen help (settings, phones only) */
+.a2hs { border-top: 2px dashed var(--ink-soft); padding-top: 12px; }
+.a2hs-note { font-size: 14px; color: var(--ink-soft); margin-bottom: 10px; }
+.a2hs-install { display: block; margin: 0 auto 12px; }
+.a2hs .tabs .tab { font-size: 14px; padding: 4px 10px; }
+.a2hs-steps { list-style: none; counter-reset: step; padding: 0; margin: 0; }
+.panel .a2hs-steps { padding-left: 0; }
+.a2hs-steps li { counter-increment: step; position: relative; padding-left: 34px; margin: 8px 0; font-size: 16px; line-height: 1.7; }
+.a2hs-steps li::before { content: counter(step); position: absolute; left: 0; top: 2px; width: 24px; height: 24px; border-radius: 50%; background: var(--red); color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.a2hs-ico { display: inline-flex; vertical-align: middle; width: 26px; height: 26px; margin: 0 2px; align-items: center; justify-content: center; background: #fffaf0; border: 1.5px solid var(--ink-soft); border-radius: 7px; }
+.a2hs-ico svg { width: 18px; height: 18px; fill: none; stroke: #2f6fd0; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.a2hs-ico circle { fill: #2f6fd0; stroke: none; }
+.a2hs-pill { display: inline-block; padding: 0 8px; border-radius: 8px; background: #2f6fd0; color: #fff; font-size: 14px; }
 table.board { width: 100%; border-collapse: collapse; font-size: 16px; }
 table.board th { font-weight: 700; color: var(--ink-soft); border-bottom: 2px solid var(--ink); padding: 6px 4px; text-align: left; }
 table.board td { padding: 6px 4px; border-bottom: 1px dashed rgba(51, 48, 46, 0.3); }

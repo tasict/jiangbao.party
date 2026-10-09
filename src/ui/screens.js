@@ -1,6 +1,7 @@
 import { TITLE, SUBTITLE, TAGLINE, DIFFICULTY, NICKNAMES, MILK } from '../game/config.js';
 import { ACHIEVEMENTS } from '../game/achievements.js';
 import { getBoard, formatTime, formatTimeZh, load, save } from '../game/storage.js';
+import { homescreenSection, bindHomescreen } from './homescreen.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -163,6 +164,7 @@ export class Screens {
             <button class="tab ${s.quality === 'low' ? 'on' : ''}" data-q="low">流暢（手機建議）</button>
           </div>
         </div>
+        ${homescreenSection()}
         <div class="actions"><button class="btn" data-go="back">返回</button></div>
       </div>`);
     el.querySelectorAll('input[type=range]').forEach((inp) => inp.addEventListener('input', () => {
@@ -176,6 +178,7 @@ export class Screens {
       this.h.setSetting('quality', b.dataset.q);
       el.querySelectorAll('[data-q]').forEach((x) => x.classList.toggle('on', x === b));
     }));
+    bindHomescreen(el);
     el.querySelector('[data-go=back]').onclick = back;
   }
 

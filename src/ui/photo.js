@@ -1,10 +1,9 @@
 import { TITLE, SUBTITLE } from '../game/config.js';
+import { isIOS } from './device.js';
 
 // In-game camera: grabs the rendered frame, mounts it on a paper photo card with the title and
 // the site address, and hands it to the system share sheet, where the player picks the app.
 
-// iPadOS reports itself as a Mac, so count touch points as well
-const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 export const SITE_URL = 'https://jiangbao.party/';
 const FONT = '"LXGW WenKai TC", "PingFang TC", "Noto Sans TC", sans-serif';
@@ -120,7 +119,7 @@ export async function sharePhoto(blob, note) {
 // the download lands in the Downloads folder, which phone gallery apps pick up.
 export async function savePhoto(blob, note, mobile) {
   const file = asFile(blob);
-  if (IOS && canShareFile(file)) {
+  if (isIOS && canShareFile(file)) {
     note('在選單裡點「儲存影像」就會存進相簿');
     try {
       await navigator.share({ files: [file] });

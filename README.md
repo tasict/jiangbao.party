@@ -26,6 +26,7 @@ npm run build
 - 網址：https://jiangbao.party/
 - push 到 `main` 就會由 `.github/workflows/deploy.yml` 自動 build 並發佈，不用手動上傳 `dist/`
 - 自訂網域在 repo 的 Settings → Pages 設定（用 Actions 部署時 GitHub 不看 `CNAME` 檔）
+- GitHub Pages 不能自訂回應標頭，CSP、HSTS 等安全標頭由 Cloudflare 的 Response Header Transform Rule 加上。遊戲若要載入新的外部資源（字型、圖片、API），記得同步修改那裡的 CSP
 
 ## 操作
 

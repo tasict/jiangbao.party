@@ -7,9 +7,10 @@ const $ = (root, sel) => root.querySelector(sel);
 // All in-game DOM: quest card, compass arrow, timer/money, minimap, health,
 // backpack, station menus, prompts, toasts, newspaper headlines, trophies.
 export class HUD {
-  constructor(root, { onPause, onMapToggle } = {}) {
+  constructor(root, { onPause, onMapToggle, onPhoto } = {}) {
     this.root = root;
     this.onPause = onPause;
+    this.onPhoto = onPhoto;
     this.onMapToggle = onMapToggle;
     this.el = document.createElement('div');
     this.el.className = 'hud';
@@ -25,6 +26,7 @@ export class HUD {
       <div class="hud-topright">
         <div class="hud-stats paper"><div class="t-time">0:00.0</div><div class="t-money">$0</div></div>
         <canvas class="minimap clickable" title="M：展開地圖"></canvas>
+        <button class="hud-photo btn btn--small clickable" title="拍照（C）"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>拍照</button>
       </div>
       <div class="hud-left">
         <div class="hp paper"><div class="hp-fill"></div><div class="hp-text"></div></div>
@@ -80,6 +82,7 @@ export class HUD {
     this.bigOpen = false;
 
     $(this.el, '.hud-pause').addEventListener('click', () => this.onPause?.());
+    $(this.el, '.hud-photo').addEventListener('click', () => this.onPhoto?.());
     this.mapCanvas.addEventListener('click', () => this.toggleMap());
     this.bigMap.addEventListener('click', () => this.toggleMap(false));
     // pointerup rather than click: on phones a second finger tapping while the first holds the

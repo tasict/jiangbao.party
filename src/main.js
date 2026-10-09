@@ -11,6 +11,7 @@ import { audio } from './game/audio.js';
 import { loadSettings, save } from './game/storage.js';
 import { HUD } from './ui/hud.js';
 import { Screens } from './ui/screens.js';
+import { PhotoBooth, flash, sharePhoto, savePhoto } from './ui/photo.js';
 
 const canvas = document.getElementById('view');
 const engine = new Engine(canvas);
@@ -30,6 +31,7 @@ let game;
 const hud = new HUD(document.getElementById('ui'), {
   onPause: () => togglePause(),
   onMapToggle: () => {},
+  onPhoto: () => takePhoto(),
 });
 game = new Game({ engine, input, world, grid, hud, achievements, audio });
 
@@ -59,7 +61,8 @@ applySettings();
 const isTouch = () => input.isTouch;
 
 function lockPointer() {
-  if (!isTouch()) canvas.requestPointerLock?.();
+  // re-locking right after an unlock can be refused; a click on the canvas locks it again
+  if (!isTouch()) canvas.requestPointerLock?.()?.catch?.(() => {});
 }
 
 const intro = new Intro(game);
@@ -113,6 +116,31 @@ function resume() {
   lockPointer();
 }
 
+// Snap the next rendered frame, then pause on a preview with share / save.
+const photo = new PhotoBooth(canvas);
+let photoUrl = null;
+function takePhoto() {
+  if (!game.running || game.paused || game.finished || game.cinematic || photo.pending) return;
+  audio.sfx('shutter');
+  flash();
+  photo.request((blob) => {
+    if (!blob || !game.running || game.finished) return;
+    game.paused = true;
+    input.enabled = false;
+    if (document.pointerLockElement) document.exitPointerLock();
+    hud.toggleMap(false);
+    if (photoUrl) URL.revokeObjectURL(photoUrl);
+    photoUrl = URL.createObjectURL(blob);
+    const mobile = isTouch();
+    screens.photo(photoUrl, {
+      mobile,
+      share: () => sharePhoto(blob, { mobile }),
+      save: () => savePhoto(blob),
+      close: () => resume(),
+    });
+  });
+}
+
 function goHome() {
   game.quit();
   engine.setNight(0);
@@ -145,6 +173,7 @@ addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if (game.cinematic) return;
   if (k === 'm' && game.running && !game.paused) hud.toggleMap();
+  if (k === 'c' && game.running && !game.paused) takePhoto();
   if (k === 'v' && game.running && !game.paused) {
     settings.view = settings.view === 'third' ? 'first' : 'third';
     save('settings', settings);
@@ -213,6 +242,7 @@ function frame(now) {
     console.error(err);
   }
   engine.render(dt);
+  photo.afterRender();
   input.endFrame();
 }
 requestAnimationFrame(frame);

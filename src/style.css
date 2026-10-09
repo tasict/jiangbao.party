@@ -320,6 +320,18 @@ table.board tr:first-child td { color: var(--red); font-weight: 700; }
 
 .hud-action { position: absolute; right: 22px; bottom: 120px; display: none; font-size: 18px; padding: 14px 20px; }
 .hud-pause { position: absolute; right: 14px; bottom: 14px; }
+.hud-photo { display: flex; align-items: center; gap: 6px; transform: rotate(-0.8deg); }
+.hud-photo svg { width: 20px; height: 20px; fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; }
+
+/* ---------- photos ---------- */
+
+.photo-flash { position: fixed; inset: 0; z-index: 40; background: #fff; pointer-events: none; animation: photo-flash 0.45s ease-out forwards; }
+@keyframes photo-flash { from { opacity: 0.9; } to { opacity: 0; } }
+.screen--photo { background: rgba(51, 48, 46, 0.35); }
+.photo-panel { width: auto; max-width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.photo-img { display: block; max-width: min(100%, 960px); max-height: calc(100vh - 220px); width: auto; height: auto; transform: rotate(-0.8deg); box-shadow: 3px 4px 0 rgba(51, 48, 46, 0.3); }
+.photo-panel .actions { margin-top: 0; gap: 10px; }
+.photo-note { font-size: 14px; color: var(--ink-soft); text-align: center; }
 
 .hud-toasts { position: absolute; left: 50%; top: 21%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; width: min(560px, 92vw); }
 .toast { padding: 7px 16px; font-size: 16px; text-align: center; animation: toast-in 0.25s ease-out; transition: opacity 0.4s, transform 0.4s; }
@@ -390,6 +402,8 @@ table.board tr:first-child td { color: var(--red); font-weight: 700; }
   .panel h2 { font-size: 24px; margin-bottom: 8px; }
   .minimap { width: 124px; height: 96px; }
   .hud-menu { bottom: 52px; width: min(320px, 46vw); padding: 8px 10px; }
+  .hud-photo { font-size: 14px; padding: 4px 10px; }
+  .photo-img { max-height: calc(100vh - 150px); }
   .m-opt { padding: 5px 8px; font-size: 14px; margin-top: 4px; }
   .m-note { margin-bottom: 4px; }
   .hud-bag { bottom: 12px; }
@@ -405,6 +419,7 @@ table.board tr:first-child td { color: var(--red); font-weight: 700; }
   .hud-menu { bottom: 108px; width: calc(100vw - 20px); right: 10px; }
   .hud-left { width: calc(100vw - 120px); }
   .hud-toasts { top: 30%; }
+  .photo-img { max-height: calc(100vh - 300px); }
 }
 
 /* ---------- opening cinematic ---------- */

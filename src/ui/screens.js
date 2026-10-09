@@ -96,13 +96,13 @@ export class Screens {
           <li><b>甘蔗的祝福</b>：到中山福德宮晚宴，福德宮董事長會送你一根甘蔗。拿著甘蔗不能攻擊，記者會跟著你。躲到沒人看得見的地方按 E 丟掉，或扛回大安神明桌供起來（攻擊速度永久加成）。被看到丟甘蔗會上頭條、收購價打折。</li>
           <li><b>生生喝鮮奶</b>：到金滑國小門口的鮮奶車搬一箱，走近學生就會自動發。每人每週只能領一瓶（一週 ${MILK.weekSec} 秒），可以花錢加碼成兩瓶。</li>
           <li><b>拆掉松山機場</b>：發完鮮奶機場大門就會打開。機庫要電鋸、航廈和塔台要怪手才拆得動。小心起飛的飛機。全部拆完就通關，越快越好。</li>
-          <li><b>賺錢</b>：靠近樹、老鼠、鼠窩就會自動攻擊，素材自動進背包。背包滿了回大安收購攤，站上金色圓圈就會有人來買。拆鼠窩有獎金和短暫攻速加成。</li>
+          <li><b>賺錢</b>：靠近樹、老鼠、鼠窩就會自動攻擊，素材自動進背包。背包滿了就找最近的收購攤（大安、北投、萬華、信義都有），站上金色圓圈就會有人來買。拆鼠窩有獎金和短暫攻速加成。</li>
           <li><b>升級</b>：大安招聘站請工人、信義商店買背包／收購價／YouBike、北投工具場買工具和護具。金色圓圈都是安全區。</li>
           <li><b>小心</b>：越危險的區域掉落越值錢（大安 → 信義 → 北投 → 萬華）。大老鼠咬人會中毒。萬華的遮陽傘下老鼠咬不到你。別誤闖信義的吸菸所；北投的溫泉怪怪的。路上倒地的阿婆記得扶。</li>
         </ol>
         <div class="controls">
-          <div><b>電腦</b>：點畫面鎖定滑鼠，WASD 移動、滑鼠轉頭、E 互動、1–4 選商店選項、M 地圖、V 切換第一／第三人稱、P 或 Esc 暫停</div>
-          <div><b>手機</b>：左半邊拖曳移動、右半邊拖曳轉頭，點按鈕互動，點小地圖展開</div>
+          <div><b>電腦</b>：點畫面鎖定滑鼠，WASD 移動、滑鼠轉頭、E 互動、1–4 選商店選項、M 地圖、V 切換第一／第三人稱、C 拍照、P 或 Esc 暫停</div>
+          <div><b>手機</b>：左半邊拖曳移動、右半邊拖曳轉頭，點按鈕互動，點小地圖展開，點「拍照」可以分享到 Threads</div>
         </div>
         <div class="actions"><button class="btn" data-go="back">返回</button></div>
       </div>`);
@@ -194,6 +194,22 @@ export class Screens {
     el.querySelector('[data-go=howto]').onclick = () => this.howto(() => this.pause());
     el.querySelector('[data-go=settings]').onclick = () => this.settings(() => this.pause());
     el.querySelector('[data-go=quit]').onclick = () => this.h.quit();
+  }
+
+  photo(src, { mobile, share, save, close }) {
+    const el = this.mount(`
+      <div class="paper panel photo-panel">
+        <img class="photo-img" src="${src}" alt="遊戲截圖" />
+        <div class="actions">
+          <button class="btn btn--gold" data-go="share">分享到 Threads</button>
+          <button class="btn" data-go="save">存到裝置</button>
+          <button class="btn" data-go="back">繼續玩</button>
+        </div>
+        <div class="photo-note">${mobile ? '在分享選單裡選 Threads，照片會一起帶過去' : '照片會先下載，再打開 Threads 發文頁，把照片拖進去就能貼上'}</div>
+      </div>`, 'screen--photo');
+    el.querySelector('[data-go=share]').onclick = share;
+    el.querySelector('[data-go=save]').onclick = save;
+    el.querySelector('[data-go=back]').onclick = close;
   }
 
   result(game, rank, entry, newTrophies) {

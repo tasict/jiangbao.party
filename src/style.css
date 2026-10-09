@@ -55,7 +55,11 @@ html, body {
   display: none;
   pointer-events: none;
   z-index: 5;
+  background: rgba(246, 239, 224, 0.18);
+  opacity: 0.75;
+  transition: opacity 0.15s;
 }
+#joystick.held { opacity: 1; }
 #joystick > div {
   position: absolute;
   left: 50%;
@@ -333,6 +337,8 @@ table.board tr:first-child td { color: var(--red); font-weight: 700; }
 .m-cost { flex: none; font-weight: 700; color: #b07a10; }
 
 .hud-action { position: absolute; right: 22px; bottom: 120px; display: none; font-size: 18px; padding: 14px 20px; }
+/* left-handed: the stick takes the right thumb, so the action button moves to the left */
+.stick-right .hud-action { right: auto; left: 22px; }
 .hud-pause { position: absolute; right: 14px; bottom: 14px; }
 .hud-photo { display: flex; align-items: center; gap: 6px; transform: rotate(-0.8deg); }
 .hud-photo svg { width: 20px; height: 20px; fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; }

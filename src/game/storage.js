@@ -19,7 +19,7 @@ export function save(key, value) {
   }
 }
 
-export const DEFAULT_SETTINGS = { master: 0.9, music: 0.45, sfx: 0.8, sensitivity: 1, quality: 'high', view: 'third', muted: false };
+export const DEFAULT_SETTINGS = { master: 0.9, music: 0.45, sfx: 0.8, sensitivity: 1, quality: 'high', view: 'third', muted: false, stick: true, stickSide: 'left' };
 
 export function loadSettings() {
   return { ...DEFAULT_SETTINGS, ...load('settings', {}) };

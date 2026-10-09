@@ -53,6 +53,7 @@ function applySettings() {
   audio.setVolumes({ master: settings.master, music: settings.music, sfx: settings.sfx });
   game.player.sensitivity = 0.0024 * settings.sensitivity;
   game.player.thirdPerson = settings.view === 'third';
+  input.setStick(settings.stick, settings.stickSide);
   const low = settings.quality === 'low';
   engine.setQuality(low ? 'low' : 'high');
 }
@@ -241,6 +242,7 @@ function frame(now) {
     // keep the loop alive; one bad frame should not freeze the game
     console.error(err);
   }
+  input.setStickActive(game.running && !game.paused && !game.finished && !game.cinematic && !intro.active && !game.caneScene.active);
   engine.render(dt);
   photo.afterRender();
   input.endFrame();

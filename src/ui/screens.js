@@ -2,6 +2,7 @@ import { TITLE, SUBTITLE, TAGLINE, DIFFICULTY, NICKNAMES, MILK } from '../game/c
 import { ACHIEVEMENTS } from '../game/achievements.js';
 import { getBoard, formatTime, formatTimeZh, load, save } from '../game/storage.js';
 import { homescreenSection, bindHomescreen } from './homescreen.js';
+import { isMobile } from './device.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -103,7 +104,7 @@ export class Screens {
         </ol>
         <div class="controls">
           <div><b>電腦</b>：點畫面鎖定滑鼠，WASD 移動、滑鼠轉頭、E 互動、1–4 選商店選項、M 地圖、V 切換第一／第三人稱、C 拍照、P 或 Esc 暫停</div>
-          <div><b>手機</b>：左半邊拖曳移動、右半邊拖曳轉頭，點按鈕互動，點小地圖展開，點「拍照」可以分享或存到相簿</div>
+          <div><b>手機</b>：用左下角的方向搖桿移動，另一邊拖曳轉頭（搖桿可以在「設定」換到右邊或隱藏），點按鈕互動，點小地圖展開，點「拍照」可以分享或存到相簿</div>
         </div>
         <div class="actions"><button class="btn" data-go="back">返回</button></div>
       </div>`);
@@ -164,6 +165,19 @@ export class Screens {
             <button class="tab ${s.quality === 'low' ? 'on' : ''}" data-q="low">流暢（手機建議）</button>
           </div>
         </div>
+        ${isMobile ? `
+        <div class="field"><span>方向搖桿</span>
+          <div class="tabs">
+            <button class="tab ${s.stick ? 'on' : ''}" data-stick="1">顯示</button>
+            <button class="tab ${!s.stick ? 'on' : ''}" data-stick="0">隱藏（直接拖曳畫面移動）</button>
+          </div>
+        </div>
+        <div class="field"><span>搖桿在哪一邊（另一邊拖曳轉頭）</span>
+          <div class="tabs">
+            <button class="tab ${s.stickSide !== 'right' ? 'on' : ''}" data-side="left">左邊</button>
+            <button class="tab ${s.stickSide === 'right' ? 'on' : ''}" data-side="right">右邊（左撇子）</button>
+          </div>
+        </div>` : ''}
         ${homescreenSection()}
         <div class="actions"><button class="btn" data-go="back">返回</button></div>
       </div>`);
@@ -177,6 +191,14 @@ export class Screens {
     el.querySelectorAll('[data-q]').forEach((b) => (b.onclick = () => {
       this.h.setSetting('quality', b.dataset.q);
       el.querySelectorAll('[data-q]').forEach((x) => x.classList.toggle('on', x === b));
+    }));
+    el.querySelectorAll('[data-stick]').forEach((b) => (b.onclick = () => {
+      this.h.setSetting('stick', b.dataset.stick === '1');
+      el.querySelectorAll('[data-stick]').forEach((x) => x.classList.toggle('on', x === b));
+    }));
+    el.querySelectorAll('[data-side]').forEach((b) => (b.onclick = () => {
+      this.h.setSetting('stickSide', b.dataset.side);
+      el.querySelectorAll('[data-side]').forEach((x) => x.classList.toggle('on', x === b));
     }));
     bindHomescreen(el);
     el.querySelector('[data-go=back]').onclick = back;

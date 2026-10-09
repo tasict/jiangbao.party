@@ -1,4 +1,4 @@
-// Keyboard + mouse (pointer lock, drag fallback) + touch (left half joystick, right half look).
+// Keyboard + mouse (pointer lock, drag fallback) + touch (a joystick on one side, drag to look on the other).
 
 export class Input {
   constructor(canvas, joystickEl) {
@@ -14,6 +14,9 @@ export class Input {
     this.mouseDrag = null;
     this.joystickEl = joystickEl;
     this.isTouch = matchMedia('(pointer: coarse)').matches;
+    // shown: the stick sits in its corner during play; otherwise it only appears under the thumb
+    this.stick = { shown: true, side: 'left', active: false };
+    addEventListener('resize', () => this.renderStick());
 
     addEventListener('keydown', (e) => {
       if (e.target instanceof HTMLInputElement) return;
@@ -55,13 +58,39 @@ export class Input {
     canvas.addEventListener('touchcancel', (e) => this.onTouchEnd(e), opts);
   }
 
+  setStick(shown, side) {
+    Object.assign(this.stick, { shown, side });
+    document.body.classList.toggle('stick-right', side === 'right');
+    this.renderStick();
+  }
+
+  // Only during play: hidden behind menus, cutscenes and the photo preview.
+  setStickActive(active) {
+    if (active === this.stick.active) return;
+    this.stick.active = active;
+    this.renderStick();
+  }
+
+  // Resting centre of the stick, clear of the health bar and the bag.
+  stickHome() {
+    const x = this.stick.side === 'right' ? innerWidth - 96 : 96;
+    return { x, y: innerHeight - 180 };
+  }
+
+  inMoveZone(x) {
+    return this.stick.side === 'right' ? x > innerWidth * 0.55 : x < innerWidth * 0.45;
+  }
+
   onTouchStart(e) {
     e.preventDefault();
     this.isTouch = true;
     for (const t of e.changedTouches) {
-      if (t.clientX < innerWidth * 0.45 && this.touchMove.id === null) {
-        Object.assign(this.touchMove, { id: t.identifier, ox: t.clientX, oy: t.clientY, x: t.clientX, y: t.clientY });
-        this.showJoystick(true);
+      if (this.inMoveZone(t.clientX) && this.touchMove.id === null) {
+        // grab the stick where it sits, or bring it to the thumb anywhere else on that side
+        const home = this.stickHome();
+        const o = this.stick.shown && Math.hypot(t.clientX - home.x, t.clientY - home.y) < 80 ? home : { x: t.clientX, y: t.clientY };
+        Object.assign(this.touchMove, { id: t.identifier, ox: o.x, oy: o.y, x: t.clientX, y: t.clientY });
+        this.renderStick();
       } else if (this.touchLook.id === null) {
         Object.assign(this.touchLook, { id: t.identifier, x: t.clientX, y: t.clientY });
       }
@@ -74,7 +103,7 @@ export class Input {
       if (t.identifier === this.touchMove.id) {
         this.touchMove.x = t.clientX;
         this.touchMove.y = t.clientY;
-        this.showJoystick(true);
+        this.renderStick();
       } else if (t.identifier === this.touchLook.id) {
         this.lookDX += (t.clientX - this.touchLook.x) * 1.6;
         this.lookDY += (t.clientY - this.touchLook.y) * 1.6;
@@ -88,21 +117,24 @@ export class Input {
     for (const t of e.changedTouches) {
       if (t.identifier === this.touchMove.id) {
         this.touchMove.id = null;
-        this.showJoystick(false);
+        this.renderStick();
       } else if (t.identifier === this.touchLook.id) {
         this.touchLook.id = null;
       }
     }
   }
 
-  showJoystick(on) {
+  renderStick() {
     const el = this.joystickEl;
     if (!el) return;
+    const m = this.touchMove, dragging = m.id !== null;
+    const on = this.stick.active && this.isTouch && (dragging || this.stick.shown);
     el.style.display = on ? 'block' : 'none';
     if (!on) return;
-    const m = this.touchMove;
-    el.style.left = `${m.ox}px`;
-    el.style.top = `${m.oy}px`;
+    const o = dragging ? { x: m.ox, y: m.oy } : this.stickHome();
+    el.style.left = `${o.x}px`;
+    el.style.top = `${o.y}px`;
+    el.classList.toggle('held', dragging);
     const v = this.touchVector();
     el.firstElementChild.style.transform = `translate(${v.x * 34}px, ${v.y * 34}px)`;
   }

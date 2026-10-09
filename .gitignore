@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.vite/
+
+# Apache settings for the old self-hosted setup; GitHub Pages ignores them
+.htaccess
+
+.DS_Store
+._*
+*.log
+.env*
